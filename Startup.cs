@@ -2,6 +2,7 @@ using CustomerManagement.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using ServerSide.Models;
 using ServerSide.Models.DataManager;
 using ServerSide.Models.Repository;
+using System.IO;
 
 namespace ServerSide
 {
@@ -29,8 +31,13 @@ namespace ServerSide
             services.AddScoped<IBankRepository, BankManager>();
             services.AddScoped<ICustomerService, CustomerService>();
 
-
             services.AddControllers();
+
+            services.AddMvc(option => option.EnableEndpointRouting = false);
+            services.AddSpaStaticFiles(configuration =>
+            {
+                configuration.RootPath = "client/build";
+            });
         }
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
@@ -50,6 +57,20 @@ namespace ServerSide
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+            });
+
+            //app.UseHttpsRedirection();
+            //app.UseStaticFiles();
+            app.UseSpaStaticFiles();
+            app.UseMvc();
+            app.UseSpa(spa =>
+            {
+                spa.Options.SourcePath = Path.Join(env.ContentRootPath, "client");
+
+                if (env.IsDevelopment())
+                {
+                    spa.UseReactDevelopmentServer(npmScript: "start");
+                }
             });
         }
 
