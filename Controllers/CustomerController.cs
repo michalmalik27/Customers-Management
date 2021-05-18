@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System;
 using CustomerManagement.Services;
+using CustomerManagement.ApiErrors;
 
 namespace ServerSide.Controller
 {
@@ -26,7 +27,8 @@ namespace ServerSide.Controller
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                return StatusCode(500, new InternalServerError(ex.Message));
+
             }
 
         }
@@ -39,13 +41,13 @@ namespace ServerSide.Controller
                 Customer customer = _customerService.Get(id);
                 if (customer == null)
                 {
-                    return NotFound("The Customer record couldn't be found.");
+                    return NotFound(new NotFoundError("The Customer record couldn't be found."));
                 }
                 return Ok(customer);
             }
             catch(Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                return StatusCode(500, new InternalServerError(ex.Message));
             }
         }
         // POST: api/Customer
@@ -56,7 +58,7 @@ namespace ServerSide.Controller
             {
                 if (customer == null)
                 {
-                    return BadRequest("Customer is null.");
+                    return BadRequest(new BadRequestError("Customer is null."));
                 }
 
                 _customerService.Add(customer);
@@ -67,7 +69,7 @@ namespace ServerSide.Controller
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                return StatusCode(500, new InternalServerError(ex.Message));
             }
         }
     }

@@ -59,8 +59,8 @@ namespace ServerSide
                 endpoints.MapControllers();
             });
 
-            //app.UseHttpsRedirection();
-            //app.UseStaticFiles();
+            app.UseHttpsRedirection();
+            app.UseStaticFiles();
             app.UseSpaStaticFiles();
             app.UseMvc();
             app.UseSpa(spa =>
@@ -72,6 +72,12 @@ namespace ServerSide
                     spa.UseReactDevelopmentServer(npmScript: "start");
                 }
             });
+
+            // Handles exceptions and generates a custom response body
+            app.UseExceptionHandler("/errors/500");
+
+            // Handles non-success status codes with empty body
+            app.UseStatusCodePagesWithReExecute("/errors/{0}");
         }
 
     }

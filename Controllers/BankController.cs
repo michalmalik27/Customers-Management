@@ -1,6 +1,7 @@
 ﻿using ServerSide.Models.Repository;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using CustomerManagement.ApiErrors;
 
 namespace ServerSide.Controller
 {
@@ -26,7 +27,7 @@ namespace ServerSide.Controller
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                return StatusCode(500, new InternalServerError(ex.Message));
             }
         }
     }

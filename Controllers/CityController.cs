@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using CustomerManagement.ApiErrors;
+using Microsoft.AspNetCore.Mvc;
 using ServerSide.Models.Repository;
-
+using System;
 
 namespace ServerSide.Controllers
 {
@@ -21,9 +22,9 @@ namespace ServerSide.Controllers
                 var cities = _cityRepository.GetAll();
                 return Ok(cities);
             }
-            catch
+            catch(Exception ex)
             {
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, new InternalServerError(ex.Message));
             }
         }
     }
