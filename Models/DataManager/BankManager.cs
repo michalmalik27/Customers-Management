@@ -9,9 +9,10 @@ using System.Net;
 
 namespace ServerSide.Models.DataManager
 {
-    public class BankManager : IBankRepository<Bank>
+    public class BankManager : IBankRepository
     {
         private Dictionary<int, Bank> _banks = null;
+
         public BankManager()
         {
         }

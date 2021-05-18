@@ -1,4 +1,4 @@
-using CustomersServerSide.Models;
+using CustomerManagement.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -24,9 +24,11 @@ namespace ServerSide
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<CustomerContext>(opts => opts.UseSqlServer(Configuration["ConnectionString:CustomerDB"]));
-            services.AddScoped<IDataRepository<City>, CityManager>();
-            services.AddScoped<IDataRepository<Customer>, CustomerManager>();
-            services.AddScoped<IBankRepository<Bank>, BankManager>();
+            services.AddScoped<ICityRepository, CityManager>();
+            services.AddScoped<ICustomerRepository, CustomerManager>();
+            services.AddScoped<IBankRepository, BankManager>();
+            services.AddScoped<ICustomerService, CustomerService>();
+
 
             services.AddControllers();
         }

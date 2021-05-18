@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ServerSide.Models;
 using ServerSide.Models.Repository;
 
 
@@ -9,17 +8,17 @@ namespace ServerSide.Controllers
     [ApiController]
     public class CityController : ControllerBase
     {
-        private readonly IDataRepository<City> _dataRepository;
-        public CityController(IDataRepository<City> dataRepository)
+        private readonly ICityRepository _cityRepository;
+        public CityController(ICityRepository cityRepository)
         {
-            _dataRepository = dataRepository;
+            _cityRepository = cityRepository;
         }
         [HttpGet]
         public IActionResult GetAllCities()
         {
             try
             {
-                var cities = _dataRepository.GetAll();
+                var cities = _cityRepository.GetAll();
                 return Ok(cities);
             }
             catch

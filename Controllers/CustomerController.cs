@@ -1,8 +1,7 @@
 ﻿using ServerSide.Models;
-using ServerSide.Models.Repository;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using CustomersServerSide.Models;
+using CustomerManagement.Services;
 
 namespace ServerSide.Controller
 {
@@ -10,15 +9,10 @@ namespace ServerSide.Controller
     [ApiController]
     public class CustomerController : ControllerBase
     {
-        private readonly IDataRepository<Customer> _dataRepository;
-        private readonly IBankRepository<Bank> _bankRepository;
-
-        public CustomerController(
-            IDataRepository<Customer> dataRepository, 
-            IBankRepository<Bank> bankRepository)
+        private readonly ICustomerService _customerService;
+        public CustomerController(ICustomerService customerService)
         {
-            _dataRepository = dataRepository;
-            _bankRepository = bankRepository;
+            _customerService = customerService;
         }
 
         // GET: api/Customer
@@ -27,7 +21,7 @@ namespace ServerSide.Controller
         {
             try
             {
-                var customers = _dataRepository.GetAll();
+                var customers = _customerService.GetAll();
                 return Ok(customers);
             }
             catch (Exception ex)
@@ -42,7 +36,7 @@ namespace ServerSide.Controller
         {
             try
             {
-                Customer customer = _dataRepository.Get(id);
+                Customer customer = _customerService.Get(id);
                 if (customer == null)
                 {
                     return NotFound("The Customer record couldn't be found.");
@@ -65,10 +59,7 @@ namespace ServerSide.Controller
                     return BadRequest("Customer is null.");
                 }
 
-                if (!_bankRepository.IsValid(customer.BankNumber, customer.BankBranch))
-                    return StatusCode(500, "Bank details not valid");
-
-                _dataRepository.Add(customer);
+                _customerService.Add(customer);
                 return CreatedAtRoute(
                       "Get",
                       new { Id = customer.CustomerId },

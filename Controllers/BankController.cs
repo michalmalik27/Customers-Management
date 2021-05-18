@@ -1,7 +1,6 @@
 ﻿using ServerSide.Models.Repository;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using CustomersServerSide.Models;
 
 namespace ServerSide.Controller
 {
@@ -9,9 +8,9 @@ namespace ServerSide.Controller
     [ApiController]
     public class BankController : ControllerBase
     {
-        private readonly IBankRepository<Bank> _bankRepository;
+        private readonly IBankRepository _bankRepository;
 
-        public BankController(IBankRepository<Bank> bankRepository)
+        public BankController(IBankRepository bankRepository)
         {
             _bankRepository = bankRepository;
         }
@@ -22,8 +21,8 @@ namespace ServerSide.Controller
         {
             try
             {
-                var customers = _bankRepository.GetAll();
-                return Ok(customers);
+                var banks = _bankRepository.GetAll();
+                return Ok(banks);
             }
             catch (Exception ex)
             {
