@@ -8,6 +8,7 @@ import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
 import Customers from './Customers';
 import NewCustomer from './NewCustomer';
+import RegisterCustomer from './RegisterCustomer';
 
 const useStyles = makeStyles((theme) => ({
     root: {

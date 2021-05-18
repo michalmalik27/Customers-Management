@@ -1,5 +1,6 @@
 ﻿
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, Component } from 'react';
+import { useForm } from "react-hook-form";
 import { makeStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Table from '@material-ui/core/Table';
@@ -13,7 +14,7 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import Button from '@material-ui/core/Button';
 import ListIcon from '@material-ui/icons/List';
 import Alert from '@material-ui/lab/Alert';
-
+import RegisterCustomer from './RegisterCustomer';
 import { Link } from "react-router-dom";
 import { CUSTOMER_API_URL, BANK_API_URL, CITY_API_URL } from './Constants';
 
@@ -30,13 +31,20 @@ const useStyles = makeStyles({
 });
 
 export default function NewCustomer() {
+    const classes = useStyles();
+
     const [cities, setCities] = useState([]);
-    const [isCitiesLoaded, setIsCitiesLoaded] = useState();
+    const [isCitiesLoaded, setIsCitiesLoaded] = useState(false);
     const [loadingCitiesError, setLoadingCitiesError] = useState(null);
 
     const [banks, setBanks] = useState([]);
-    const [isBanksLoaded, setIsBanksLoaded] = useState();
+    const [isBanksLoaded, setIsBanksLoaded] = useState(false);
     const [loadingBanksError, setLoadingBanksError] = useState(null);
+
+    useEffect(() => {
+        fetchCities();
+        fetchBanks();
+    }, []);
 
     let fetchCities = async () => {
         let response = await fetch(CITY_API_URL);
@@ -56,31 +64,13 @@ export default function NewCustomer() {
         let data = await response.json();
 
         if (response.ok)
-            setCities(data);
+            setBanks(data);
         else {
             setLoadingBanksError(`Loading Failed: ${data.message}`);
         }
 
-        setIsBanksLoaded(true)
-    };
-
-    useEffect(() => {
-        fetchCities();
-        fetchBanks();
-    }, []);
-
-    const classes = useStyles();
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
-
-    const handleChangePage = (event, newPage) => {
-        setPage(newPage);
-    };
-
-    const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(+event.target.value);
-        setPage(0);
-    };
+        setIsBanksLoaded(true);
+    }
 
     return (
         <>
@@ -99,7 +89,7 @@ export default function NewCustomer() {
                 (<LinearProgress />) :
                 (!!loadingCitiesError || !!loadingBanksError) ?
                     (<Alert severity="error">Loading Data Failed: {loadingCitiesError}, {loadingBanksError}</Alert>) :
-                    (<div></div>)
+                    <RegisterCustomer cities={cities} banks={banks} />
             }
         </>
     );

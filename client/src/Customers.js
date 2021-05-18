@@ -102,7 +102,7 @@ export default function Customers() {
                                     <TableBody>
                                         {customers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
                                             return (
-                                                <TableRow hover role="checkbox" tabIndex={-1} key={customers.code}>
+                                                <TableRow hover role="checkbox" tabIndex={-1} key={row.customerId}>
                                                     <TableCell>{row.idNumber}</TableCell>
                                                     <TableCell>{row.customerHebName}</TableCell>
                                                     <TableCell>{row.customerEngName}</TableCell>
