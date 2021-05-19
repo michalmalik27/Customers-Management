@@ -23,6 +23,7 @@ namespace CustomersServerSide.Models
     {
         public int Code { get; set; }
         public bool Status { get; set; }
+        public string Description { get; set; }
         public List<int> Branches { get; set; }
 
         public Bank()

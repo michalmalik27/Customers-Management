@@ -1,47 +1,29 @@
 ﻿
-import React, { useState, useEffect, Component } from 'react';
-import { useForm } from "react-hook-form";
-import { makeStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TablePagination from '@material-ui/core/TablePagination';
-import TableRow from '@material-ui/core/TableRow';
-import LinearProgress from '@material-ui/core/LinearProgress';
+import React, { useState, useEffect } from 'react';
+import { Link } from "react-router-dom";
+import { BANK_API_URL, CITY_API_URL } from './Constants';
 import Button from '@material-ui/core/Button';
 import ListIcon from '@material-ui/icons/List';
-import Alert from '@material-ui/lab/Alert';
 import RegisterCustomer from './RegisterCustomer';
-import { Link } from "react-router-dom";
-import { CUSTOMER_API_URL, BANK_API_URL, CITY_API_URL } from './Constants';
-
-const useStyles = makeStyles({
-    root: {
-        width: '100%',
-    },
-    container: {
-        maxHeight: 600,
-    },
-    button: {
-        position: "right"
-    },
-});
+import UIActionState, { actionStates } from './UIActionState';
+import { Container } from '@material-ui/core';
 
 export default function NewCustomer() {
-    const classes = useStyles();
-
     const [cities, setCities] = useState([]);
-    const [isCitiesLoaded, setIsCitiesLoaded] = useState(false);
-    const [loadingCitiesError, setLoadingCitiesError] = useState(null);
+    const [loadCitiesState, setLoadCitiesState] = useState(actionStates.INIT);
+    const [loadCitiesStateText, setLoadCitiesStateText] = useState(null);
 
     const [banks, setBanks] = useState([]);
-    const [isBanksLoaded, setIsBanksLoaded] = useState(false);
-    const [loadingBanksError, setLoadingBanksError] = useState(null);
+    const [loadBanksState, setLoadBanksState] = useState(actionStates.INIT);
+    const [loadBanksStateText, setLoadBanksStateText] = useState(null);
 
     useEffect(() => {
+        setLoadCitiesState(actionStates.IN_PROCESS);
+        setLoadCitiesStateText(`Loading Cities...`);
+
+        setLoadBanksState(actionStates.IN_PROCESS);
+        setLoadBanksStateText(`Loading Banks...`);
+
         fetchCities();
         fetchBanks();
     }, []);
@@ -50,27 +32,34 @@ export default function NewCustomer() {
         let response = await fetch(CITY_API_URL);
         let data = await response.json();
 
-        if (response.ok)
+        if (response.ok) {
             setCities(data);
-        else {
-            setLoadingCitiesError(`Loading Failed: ${data.message}`);
+            setLoadCitiesState(actionStates.IS_COMPLETED);
+            setLoadCitiesStateText(null);
         }
-
-        setIsCitiesLoaded(true)
+        else {
+            setLoadCitiesState(actionStates.IS_FAILED);
+            setLoadCitiesStateText(`Loading Cities Failed: ${data.message}`)
+        }
     };
 
     let fetchBanks = async () => {
         let response = await fetch(BANK_API_URL);
         let data = await response.json();
 
-        if (response.ok)
+        if (response.ok) {
             setBanks(data);
-        else {
-            setLoadingBanksError(`Loading Failed: ${data.message}`);
+            setLoadBanksState(actionStates.IS_COMPLETED);
+            setLoadBanksStateText(null);
         }
-
-        setIsBanksLoaded(true);
+        else {
+            setLoadBanksState(actionStates.IS_FAILED);
+            setLoadBanksStateText(`Loading Banks Failed: ${data.message}`)
+        }
     }
+
+    let allDataLoaded = () => loadBanksState == actionStates.IS_COMPLETED &&
+        loadCitiesState == actionStates.IS_COMPLETED;
 
     return (
         <>
@@ -79,18 +68,15 @@ export default function NewCustomer() {
                     disableElevation
                     variant="contained"
                     color="primary"
-                    className={classes.button}
                     startIcon={<ListIcon />}
                 > All Customers
             </Button>
             </Link>
-            <h2>New Customer</h2>
-            {(!isCitiesLoaded || !isBanksLoaded) ?
-                (<LinearProgress />) :
-                (!!loadingCitiesError || !!loadingBanksError) ?
-                    (<Alert severity="error">Loading Data Failed: {loadingCitiesError}, {loadingBanksError}</Alert>) :
-                    <RegisterCustomer cities={cities} banks={banks} />
-            }
+            <Container>
+                <UIActionState actionState={loadCitiesState} actionText={loadCitiesStateText} />
+                <UIActionState actionState={loadBanksState} actionText={loadBanksStateText} />
+                {allDataLoaded() && <RegisterCustomer cities={cities} banks={banks} />}
+            </Container>       
         </>
     );
 }

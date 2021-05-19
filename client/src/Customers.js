@@ -9,10 +9,10 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
-import LinearProgress from '@material-ui/core/LinearProgress';
 import Button from '@material-ui/core/Button';
 import AddIcon from '@material-ui/icons/Add';
 import Alert from '@material-ui/lab/Alert';
+import UIActionState, { actionStates } from './UIActionState';
 
 import { Link } from "react-router-dom";
 import { CUSTOMER_API_URL } from './Constants';
@@ -32,13 +32,16 @@ const useStyles = makeStyles({
 export default function Customers() {
     const classes = useStyles();
 
+    const [loadState, setLoadState] = useState(actionStates.INIT);
+    const [loadStateText, setLoadStateText] = useState(null);
+
     const [customers, setCustomers] = useState([]);
-    const [isLoaded, setIsLoaded] = useState(false);
-    const [loadingError, setLoadingError] = useState(null);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
     useEffect(() => {
+        setLoadState(actionStates.IN_PROCESS);
+        setLoadStateText('Loading the customers...')
         fetchCustomers();
     }, []);
 
@@ -46,13 +49,15 @@ export default function Customers() {
         let response = await fetch(CUSTOMER_API_URL);
         let data = await response.json();
 
-        if (response.ok)
+        if (response.ok) {
             setCustomers(data);
-        else {
-            setLoadingError(`Loading Failed: ${data.message}`);
+            setLoadStateText(null);
+            setLoadState(actionStates.IS_COMPLETED);
         }
-
-        setIsLoaded(true)
+        else {
+            setLoadState(actionStates.IS_FAILED);
+            setLoadStateText(`Loading Failed: ${data.message}`)
+        }
     };
 
     const handleChangePage = (event, newPage) => {
@@ -77,12 +82,9 @@ export default function Customers() {
             </Button>
             </Link>
             <h2>Customers</h2>
-
-            {(!isLoaded) ?
-                (<LinearProgress />) :
-                (!!loadingError) ?
-                    (< Alert severity="error">{loadingError}</Alert>) :
-                    (customers.length === 0) ?
+            <UIActionState actionState={loadState} actionText={loadStateText}>
+                <>
+                    {customers.length === 0 ?
                         (< Alert severity="warning">There is not any customer</Alert>) :
                         (< Paper className={classes.root} >
                             <TableContainer className={classes.container}>
@@ -127,7 +129,9 @@ export default function Customers() {
                                 onChangeRowsPerPage={handleChangeRowsPerPage}
                             />
                         </Paper >)
-            }
+                    }
+                </>
+            </UIActionState>
         </>
     );
 }

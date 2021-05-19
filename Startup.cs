@@ -31,7 +31,7 @@ namespace ServerSide
             services.AddScoped<IBankRepository, BankManager>();
             services.AddScoped<ICustomerService, CustomerService>();
 
-            services.AddControllers();
+            services.AddControllers();//.AddNewtonsoftJson();
 
             services.AddMvc(option => option.EnableEndpointRouting = false);
             services.AddSpaStaticFiles(configuration =>
