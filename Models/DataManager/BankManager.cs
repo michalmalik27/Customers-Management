@@ -44,7 +44,7 @@ namespace ServerSide.Models.DataManager
                         foreach (var branch in branches)
                         {
                             if (_banks.ContainsKey(branch.BankCode))
-                                _banks[branch.BankCode].Branches.Add(branch.BranchNumber);
+                                _banks[branch.BankCode].Branches.Add(branch);
                         }
                     }
                 }
@@ -70,7 +70,7 @@ namespace ServerSide.Models.DataManager
 
                 return _banks.TryGetValue(bankNumber, out Bank bank) &&
                     bank.Status &&
-                    bank.Branches.Contains(branchNumber);
+                    bank.Branches.Any(x => x.BranchNumber == branchNumber);
             }
             catch (Exception ex)
             {

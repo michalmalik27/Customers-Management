@@ -5,13 +5,16 @@ import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
-import Grid from '@material-ui/core/Grid';import AccountCircleIcon from '@material-ui/icons/AccountCircle';
+import Grid from '@material-ui/core/Grid';
+import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import Typography from '@material-ui/core/Typography';
-import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-import UIActionState, { actionStates } from './UIActionState';
 import MenuItem from '@material-ui/core/MenuItem';
+import Alert from '@material-ui/lab/Alert';
+import { makeStyles } from '@material-ui/core/styles';
+import UIActionState, { actionStates } from './UIActionState';
 import { CUSTOMER_API_URL } from './Constants';
+import { useForm, Controller } from "react-hook-form";
 
 const useStyles = makeStyles((theme) => ({
     paper: {
@@ -31,76 +34,124 @@ const useStyles = makeStyles((theme) => ({
     submit: {
         margin: theme.spacing(3, 0, 2),
     },
+    alert: {
+        width: '100%',
+    },
 }));
+
+const Input = ({ control, name, label, type, rules }) => {
+    return (
+        <Controller
+            name={name}
+            control={control}
+            defaultValue=""
+            render={({ field: { onChange, value }, fieldState: { error } }) => (
+                <TextField
+                    type={type}
+                    label={label}
+                    variant="filled"
+                    value={value}
+                    onChange={onChange}
+                    error={!!error}
+                    helperText={error ? error.message : null}
+                    fullWidth
+                    InputLabelProps={{ shrink: true }}
+                />
+            )}
+            rules={rules}
+        />);
+}
+
+const Select = ({ control, name, label, list, idField, valueField, rules }) => {
+    return (
+        <Controller
+            name={name}
+            control={control}
+            defaultValue=""
+            render={({ field: { onChange, value }, fieldState: { error } }) => (
+                <TextField
+                    select
+                    label={label}
+                    variant="filled"
+                    value={value}
+                    onChange={onChange}
+                    error={!!error}
+                    helperText={error ? error.message : null}
+                    fullWidth
+                    InputLabelProps={{ shrink: true }}
+                >
+                    { list.map((item) =>
+                        <MenuItem key={item[idField]} value={item[idField]}>
+                            {item[valueField]}
+                        </MenuItem>
+                    )}
+                </TextField>
+            )}
+            rules={rules}
+        />);
+}
+
+const rules = {
+    idNumber: {
+        minLength: { value: 9, message: "9 digits" },
+        maxLength: { value: 9, message: "9 digits" },
+        required: "Required",
+    },
+    customerHebName: {
+        pattern: {
+            value: /^[\u0590-\u05fe-\s]+$/i,
+            message:
+                "Only hebrew characters '-' and space",
+        },
+        maxLength: { value: 20, message: "Maximum 20 characters" },
+        required: "Required",
+    }, customerEngName: {
+        pattern: {
+            value: /^[A-Za-z-\s]+$/i,
+            message:
+                "Only english characters '-' and space",
+        },
+        maxLength: { value: 15, message: "Maximum 15 characters" },
+        required: "Required",
+    }, dateOfBirth: {
+        required: "Required",
+    }, cityId: {
+        required: "Required",
+    }, bankNumber: {
+        required: "Required",
+    }, bankBranch: {
+        required: "Required",
+    }, accountingNumber: {
+        maxLength: { value: 10, message: "Maximum 10 digits" },
+        required: "Required",
+    }
+};
 
 const RegisterCustomer = ({ banks, cities }) => {
     const classes = useStyles();
 
     const [saveState, setSaveState] = useState(actionStates.INIT);
-    const [saveStateText, setSaveStateText] = useState(null);
-    const [customer, setCustomer] = useState({
-        idNumber: undefined,
-        customerHebName: undefined,
-        customerEngName: undefined,
-        cityId: undefined,
-        dateOfBirth: undefined,
-        bankNumber: undefined,
-        bankBranch: undefined,
-        accountingNumber: undefined
-    });
+    const [saveStateText, setSaveStateText] = useState(undefined);
 
-    const validationRegullar = {
-        idNumber: {
-            regex: new RegExp('^[0-9]{9}$'),
-            errorMessage: 'Id Number must contain 9 digits'
-        },
-        customerHebName: {
-            regex: new RegExp('^\d{9}$'),
-            errorMessage: 'Id Number not valid'
-        },
-        customerEngName: {
-            regex: new RegExp('^\d{9}$'),
-            errorMessage: 'Id Number not valid'
-        },
-        accountingNumber: {
-            regex: new RegExp('^[0-9]{1, 10}$'),
-            errorMessage: 'Accounting Number must contain between 1-10 digits'
-        }
-    };
+    const { handleSubmit, control, watch } = useForm();
 
-    const updateCustomerData = (event) => {
-        let updatedCustomer = { ...customer };
-        updatedCustomer[event.target.id] = event.target.value;
-        setCustomer(updatedCustomer)
-    }
-    const showHelperText = (elementName) => {
-        return !customer[elementName] ||
-            (validationRegullar[elementName] && !validationRegullar[elementName].regex.exec(customer[elementName]));
-    }
-
-    const getHelperText = (elementName) => {
-        if (!customer[elementName])
-            return 'Required';
-        if (validationRegullar[elementName] && !validationRegullar[elementName].regex.exec(customer[elementName]))
-            return validationRegullar[elementName].errorMessage;
-        return '';
-    }
-
-    const handleSubmit = async () => {
+    const onSubmit = async (customer) => {  
         try {
+            setSaveState(actionStates.IN_PROCESS);
+            setSaveStateText('Saving the customer...');
             console.log(customer);
             let response = await fetch(CUSTOMER_API_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ customer })
+                body: JSON.stringify(customer)
             });
             let data = await response.json();
 
             if (response.ok) {
                 setSaveState(actionStates.IS_COMPLETED);
-                setSaveStateText(null);
+                setSaveStateText(undefined);
             }
             else {
                 setSaveState(actionStates.IS_FAILED);
@@ -113,6 +164,12 @@ const RegisterCustomer = ({ banks, cities }) => {
         }
     }
 
+    const bankNumber = watch('bankNumber');
+
+    const branches = () => {
+        return !bankNumber ? [] : banks.find(x => x.code === bankNumber).branches;
+    }
+
     return (
         <Container component="main">
             <CssBaseline />
@@ -123,177 +180,38 @@ const RegisterCustomer = ({ banks, cities }) => {
                 <Typography component="h1" variant="h5">
                     New Customer
                 </Typography>
-                <form className={classes.form} noValidate>
+                <form className={classes.form} onSubmit={handleSubmit(onSubmit)}>
                     <Grid container spacing={2}>
                         <Grid item xs={12} md={6}>
-                            <TextField
-                                max="999999999"
-                                type="number"
-                                name="idNumber"
-                                variant="outlined"
-                                id="idNumber"
-                                label="ID Number"
-                                helperText={getHelperText('idNumber')}
-                                error={showHelperText('idNumber')}
-                                onChange={(event) => updateCustomerData(event)}
-                                value={customer.idNumber}
-                                required
-                                fullWidth
-                                autoFocus
-                                InputLabelProps={{
-                                    shrink: true,
-                                }}
-                            />
+                            <Input name="idNumber" label="Id Number" type="number" control={control} rules={rules.idNumber} />
                         </Grid>
                         <Grid item xs={12} md={6}>
-                            <TextField
-                                name="customerHebName"
-                                variant="outlined"
-                                id="customerHebName"
-                                label="Customer Hebrew Name"
-                                helperText={getHelperText('customerHebName')}
-                                error={showHelperText('customerHebName')}
-                                onChange={(event) => updateCustomerData(event)}
-                                value={customer.customerHebName}
-                                required
-                                fullWidth
-                                InputLabelProps={{
-                                    shrink: true,
-                                }}
-                            />
+                            <Input name="customerHebName" label="Hebrew Name" type="text" control={control} rules={rules.customerHebName} />
                         </Grid>
                         <Grid item xs={12} md={6}>
-                            <TextField
-                                name="customerEngName"
-                                variant="outlined"
-                                id="customerEngName"
-                                label="Customer English Name"
-                                helperText={getHelperText('customerEngName')}
-                                error={showHelperText('customerEngName')}
-                                onChange={(event) => updateCustomerData(event)}
-                                value={customer.customerEngName}
-                                required
-                                fullWidth
-                                InputLabelProps={{
-                                    shrink: true,
-                                }}
-                            />
+                            <Input name="customerEngName" label="English Name" type="text" control={control} rules={rules.customerEngName} />
                         </Grid>
                         <Grid item xs={12} md={6}>
-                            <TextField
-                                type="date"
-                                name="dateOfBirth"
-                                variant="outlined"
-                                id="dateOfBirth"
-                                label="Date Of Birth"
-                                helperText={getHelperText('dateOfBirth')}
-                                error={showHelperText('dateOfBirth')}
-                                onChange={(event) => updateCustomerData(event)}
-                                value={customer.dateOfBirth}
-                                required
-                                fullWidth
-                                InputLabelProps={{
-                                    shrink: true,
-                                }}
-                            />
+                            <Input name="dateOfBirth" label="Date Of Birth" type="date" control={control} rules={rules.dateOfBirth} />
                         </Grid>
                         <Grid item xs={12} md={6}>
-                            <TextField
-                                select
-                                name="cityId"
-                                variant="outlined"
-                                id="cityId"
-                                label="City"
-                                helperText={getHelperText('cityId')}
-                                error={showHelperText('cityId')}
-                                onChange={(event) => updateCustomerData(event)}
-                                value={customer.cityId}
-                                required
-                                fullWidth
-                                InputLabelProps={{
-                                    shrink: true,
-                                }}
-                            >
-                                {cities.map((city) => (
-                                    <MenuItem key={city.cityId} value={city.cityId}>
-                                        {city.cityName}
-                                    </MenuItem>
-                                ))}
-                            </TextField>
+                            <Select name="cityId" label="City" control={control} list={cities} idField="cityId" valueField="cityName" rules={rules.cityId} />
                         </Grid>
                         <Grid item xs={12} md={6}>
-                            <TextField
-                                select
-                                name="bankNumber"
-                                variant="outlined"
-                                id="bankNumber"
-                                label="Bank"
-                                helperText={getHelperText('bankNumber')}
-                                error={showHelperText('bankNumber')}
-                                onChange={(event) => updateCustomerData(event)}
-                                value={customer.bankNumber}
-                                required
-                                fullWidth
-                                InputLabelProps={{
-                                    shrink: true,
-                                }}
-                            >
-                                {banks.map((bank) => (
-                                    <MenuItem key={bank.code} value={bank.code}>
-                                        {bank.description} ({bank.code})
-                                    </MenuItem>
-                                ))}
-                            </TextField>
+                            <Select name="bankNumber" label="Bank" control={control} list={banks} idField="code" valueField="description" rules={rules.bankNumber} />
                         </Grid>
                         <Grid item xs={12} md={6}>
-                            <TextField
-                                select
-                                name="bankBranch"
-                                variant="outlined"
-                                id="bankBranch"
-                                label="Bank Branch"
-                                helperText={getHelperText('bankBranch')}
-                                error={showHelperText('bankBranch')}
-                                onChange={(event) => updateCustomerData(event)}
-                                value={customer.bankBranch}
-                                required
-                                fullWidth
-                                InputLabelProps={{
-                                    shrink: true,
-                                }}
-                            >
-                                {banks.filter(x => x.code === customer.bankNumber).map((bankBranch) => (
-                                    <MenuItem key={bankBranch.braunchNumber} value={bankBranch.branchNumber}>
-                                        {bankBranch.branchName} ({bankBranch.braunchNumber})
-                                    </MenuItem>
-                                ))}
-                            </TextField>
+                            <Select name="bankBranch" label="Bank Branch" control={control} list={branches()} idField="branchNumber" valueField="branchName" rules={rules.bankBranch} />
                         </Grid>
                         <Grid item xs={12} md={6}>
-                            <TextField
-                                max="999999999"
-                                type="number"
-                                name="idNumber"
-                                variant="outlined"
-                                id="accountingNumber"
-                                label="Accounting Number"
-                                helperText={getHelperText('accountingNumber')}
-                                error={showHelperText('accountingNumber')}
-                                onChange={(event) => updateCustomerData(event)}
-                                value={customer.accountingNumber}
-                                required
-                                fullWidth
-                                autoFocus
-                                InputLabelProps={{
-                                    shrink: true,
-                                }}
-                            />
+                            <Input name="accountingNumber" label="Accounting Number" type="number" control={control} rules={rules.accountingNumber} />
                         </Grid>
-
                     </Grid>
-                    <Button onClick={handleSubmit}
+                    <Button
+                        type="submit"
                         fullWidth
                         variant="contained"
+                        disabled={saveState == actionStates.IN_PROCESS}
                         color="primary"
                         className={classes.submit}
                     >
@@ -306,7 +224,13 @@ const RegisterCustomer = ({ banks, cities }) => {
                     </Grid>
                 </form>
             </div>
-            <UIActionState actionState={saveState} actionText={saveStateText} />
+            <UIActionState actionState={saveState} actionText={saveStateText} >
+                <div className={classes.alert}>
+                    <Alert severity="success">
+                        The customer saved!
+                    </Alert>
+                </div>
+            </UIActionState>
         </Container>
     );
 }

@@ -31,8 +31,7 @@ namespace ServerSide
             services.AddScoped<IBankRepository, BankManager>();
             services.AddScoped<ICustomerService, CustomerService>();
 
-            services.AddControllers();//.AddNewtonsoftJson();
-
+            services.AddControllers().AddNewtonsoftJson();
             services.AddMvc(option => option.EnableEndpointRouting = false);
             services.AddSpaStaticFiles(configuration =>
             {
@@ -79,6 +78,5 @@ namespace ServerSide
             // Handles non-success status codes with empty body
             app.UseStatusCodePagesWithReExecute("/errors/{0}");
         }
-
     }
 }

@@ -24,11 +24,11 @@ namespace CustomersServerSide.Models
         public int Code { get; set; }
         public bool Status { get; set; }
         public string Description { get; set; }
-        public List<int> Branches { get; set; }
+        public List<BankBranche> Branches { get; set; }
 
         public Bank()
         {
-            Branches = new List<int>();
+            Branches = new List<BankBranche>();
         }
     }
 
@@ -37,5 +37,7 @@ namespace CustomersServerSide.Models
     {
         public int BankCode{ get; set; }
         public int BranchNumber { get; set; }
+        public string BranchName { get; set; }
+
     }
 }
