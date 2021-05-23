@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace ServerSide.Models
 {
@@ -14,6 +16,8 @@ namespace ServerSide.Models
         [MaxLength(50)]
         public string CityName { get; set; }
 
+        [JsonIgnore]
+        [IgnoreDataMember]
         public ICollection<Customer> Customers { get; set; }
     }
 }
