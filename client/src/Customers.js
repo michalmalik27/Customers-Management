@@ -69,6 +69,11 @@ export default function Customers() {
         setPage(0);
     };
 
+    const dateOfBirth = (dateOfBirth) => {
+        var date = new Date(dateOfBirth);
+        return `${date.getDay()}/${date.getMonth()}/${date.getFullYear()}`
+    }
+
     return (
         <>
             <Link to="new-customer">
@@ -94,7 +99,7 @@ export default function Customers() {
                                             <TableCell>Id Number</TableCell>
                                             <TableCell>Hebrew Name</TableCell>
                                             <TableCell>English Name</TableCell>
-                                            <TableCell> Date Of Birth </TableCell>
+                                            <TableCell>Date Of Birth</TableCell>
                                             <TableCell>City Name</TableCell>
                                             <TableCell>Bank</TableCell>
                                             <TableCell>Branch</TableCell>
@@ -108,7 +113,7 @@ export default function Customers() {
                                                     <TableCell>{row.idNumber}</TableCell>
                                                     <TableCell>{row.customerHebName}</TableCell>
                                                     <TableCell>{row.customerEngName}</TableCell>
-                                                    <TableCell>{row.dateOfBirth}</TableCell>
+                                                    <TableCell>{dateOfBirth(row.dateOfBirth)}</TableCell>
                                                     <TableCell>{row.cityName}</TableCell>
                                                     <TableCell>{row.bankNumber}</TableCell>
                                                     <TableCell>{row.bankBranch}</TableCell>
