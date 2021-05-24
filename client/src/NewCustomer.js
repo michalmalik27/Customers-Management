@@ -1,21 +1,33 @@
 ﻿
 import React, { useState, useEffect } from 'react';
 import { Link } from "react-router-dom";
-import { BANK_API_URL, CITY_API_URL } from './Constants';
+
+import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import ListIcon from '@material-ui/icons/List';
+import Container from '@material-ui/core/Container';
+
+import { BANK_API_URL, CITY_API_URL } from './Constants';
+
 import RegisterCustomer from './RegisterCustomer';
 import UIActionState, { actionStates } from './UIActionState';
-import { Container } from '@material-ui/core';
+
+const useStyles = makeStyles((theme) => ({
+    root: {
+        marginTop: theme.spacing(4)
+    },
+}));
 
 export default function NewCustomer() {
+    const classes = useStyles();
+
     const [cities, setCities] = useState([]);
     const [loadCitiesState, setLoadCitiesState] = useState(actionStates.INIT);
-    const [loadCitiesStateText, setLoadCitiesStateText] = useState(null);
+    const [loadCitiesStateText, setLoadCitiesStateText] = useState(undefined);
 
     const [banks, setBanks] = useState([]);
     const [loadBanksState, setLoadBanksState] = useState(actionStates.INIT);
-    const [loadBanksStateText, setLoadBanksStateText] = useState(null);
+    const [loadBanksStateText, setLoadBanksStateText] = useState(undefined);
 
     useEffect(() => {
         setLoadCitiesState(actionStates.IN_PROCESS);
@@ -72,11 +84,11 @@ export default function NewCustomer() {
                 > All Customers
             </Button>
             </Link>
-            <Container>
+            <Container className={classes.root}>
                 <UIActionState actionState={loadCitiesState} actionText={loadCitiesStateText} />
                 <UIActionState actionState={loadBanksState} actionText={loadBanksStateText} />
                 {allDataLoaded() && <RegisterCustomer cities={cities} banks={banks} />}
-            </Container>       
+            </Container>
         </>
     );
 }

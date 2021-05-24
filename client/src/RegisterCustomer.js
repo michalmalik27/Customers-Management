@@ -1,24 +1,23 @@
 ﻿
 import React, { useState } from 'react';
+import { useForm } from "react-hook-form";
 
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import TextField from '@material-ui/core/TextField';
 import Grid from '@material-ui/core/Grid';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
-import MenuItem from '@material-ui/core/MenuItem';
 import Alert from '@material-ui/lab/Alert';
 import { makeStyles } from '@material-ui/core/styles';
+
 import UIActionState, { actionStates } from './UIActionState';
 import { CUSTOMER_API_URL } from './Constants';
-import { useForm, Controller } from "react-hook-form";
+import { TextInput, NumberInput, DateInput, SelectInput, } from './Inputs';
 
 const useStyles = makeStyles((theme) => ({
     paper: {
-        marginTop: theme.spacing(8),
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -39,89 +38,37 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-const Input = ({ control, name, label, type, rules }) => {
-    return (
-        <Controller
-            name={name}
-            control={control}
-            defaultValue=""
-            render={({ field: { onChange, value }, fieldState: { error } }) => (
-                <TextField
-                    type={type}
-                    label={label}
-                    variant="filled"
-                    value={value}
-                    onChange={onChange}
-                    error={!!error}
-                    helperText={error ? error.message : null}
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                />
-            )}
-            rules={rules}
-        />);
-}
-
-const Select = ({ control, name, label, list, idField, valueField, rules }) => {
-    return (
-        <Controller
-            name={name}
-            control={control}
-            defaultValue=""
-            render={({ field: { onChange, value }, fieldState: { error } }) => (
-                <TextField
-                    select
-                    label={label}
-                    variant="filled"
-                    value={value}
-                    onChange={onChange}
-                    error={!!error}
-                    helperText={error ? error.message : null}
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                >
-                    { list.map((item) =>
-                        <MenuItem key={item[idField]} value={item[idField]}>
-                            {item[valueField]}
-                        </MenuItem>
-                    )}
-                </TextField>
-            )}
-            rules={rules}
-        />);
-}
-
 const rules = {
     idNumber: {
+        pattern: { value: /^[\d]+$/i, message: "Only digits" },
         minLength: { value: 9, message: "9 digits" },
         maxLength: { value: 9, message: "9 digits" },
         required: "Required",
     },
     customerHebName: {
-        pattern: {
-            value: /^[\u0590-\u05fe-\s]+$/i,
-            message:
-                "Only hebrew characters '-' and space",
-        },
+        pattern: { value: /^[\u0590-\u05fe-\s]+$/i, message: "Only hebrew characters '-' and space" },
         maxLength: { value: 20, message: "Maximum 20 characters" },
         required: "Required",
-    }, customerEngName: {
-        pattern: {
-            value: /^[A-Za-z-\s]+$/i,
-            message:
-                "Only english characters '-' and space",
-        },
+    },
+    customerEngName: {
+        pattern: { value: /^[A-Za-z-\s]+$/i, message: "Only english characters '-' and space" },
         maxLength: { value: 15, message: "Maximum 15 characters" },
         required: "Required",
-    }, dateOfBirth: {
+    },
+    dateOfBirth: {
         required: "Required",
-    }, cityId: {
+    },
+    cityId: {
         required: "Required",
-    }, bankNumber: {
+    },
+    bankNumber: {
         required: "Required",
-    }, bankBranch: {
+    },
+    bankBranch: {
         required: "Required",
-    }, accountingNumber: {
+    },
+    accountingNumber: {
+        pattern: { value: /^[\d]+$/i, message: "Only digits" },
         maxLength: { value: 10, message: "Maximum 10 digits" },
         required: "Required",
     }
@@ -133,9 +80,11 @@ const RegisterCustomer = ({ banks, cities }) => {
     const [saveState, setSaveState] = useState(actionStates.INIT);
     const [saveStateText, setSaveStateText] = useState(undefined);
 
-    const { handleSubmit, control, watch } = useForm();
+    const { handleSubmit, control, watch } = useForm({
+        mode: "onChange"
+    });
 
-    const onSubmit = async (customer) => {  
+    const onSubmit = async (customer) => {
         try {
             setSaveState(actionStates.IN_PROCESS);
             setSaveStateText('Saving the customer...');
@@ -160,7 +109,7 @@ const RegisterCustomer = ({ banks, cities }) => {
 
         } catch (e) {
             setSaveState(actionStates.IS_FAILED);
-            setSaveStateText(`Model Is Not Valid`)
+            setSaveStateText(`Error ocourd...`)
         }
     }
 
@@ -183,28 +132,28 @@ const RegisterCustomer = ({ banks, cities }) => {
                 <form className={classes.form} onSubmit={handleSubmit(onSubmit)}>
                     <Grid container spacing={2}>
                         <Grid item xs={12} md={6}>
-                            <Input name="idNumber" label="Id Number" type="number" control={control} rules={rules.idNumber} />
+                            <TextInput name="idNumber" label="Id Number" control={control} rules={rules.idNumber} />
                         </Grid>
                         <Grid item xs={12} md={6}>
-                            <Input name="customerHebName" label="Hebrew Name" type="text" control={control} rules={rules.customerHebName} />
+                            <TextInput name="customerHebName" label="Hebrew Name" control={control} rules={rules.customerHebName} />
                         </Grid>
                         <Grid item xs={12} md={6}>
-                            <Input name="customerEngName" label="English Name" type="text" control={control} rules={rules.customerEngName} />
+                            <TextInput name="customerEngName" label="English Name" control={control} rules={rules.customerEngName} />
                         </Grid>
                         <Grid item xs={12} md={6}>
-                            <Input name="dateOfBirth" label="Date Of Birth" type="date" control={control} rules={rules.dateOfBirth} />
+                            <DateInput name="dateOfBirth" label="Date Of Birth" type="date" control={control} rules={rules.dateOfBirth} />
                         </Grid>
                         <Grid item xs={12} md={6}>
-                            <Select name="cityId" label="City" control={control} list={cities} idField="cityId" valueField="cityName" rules={rules.cityId} />
+                            <SelectInput name="cityId" label="City" control={control} list={cities} extractId={item => item.cityId} extractValue={item => item.cityName} rules={rules.cityId} />
                         </Grid>
                         <Grid item xs={12} md={6}>
-                            <Select name="bankNumber" label="Bank" control={control} list={banks} idField="code" valueField="description" rules={rules.bankNumber} />
+                            <SelectInput name="bankNumber" label="Bank" control={control} list={banks} extractId={item => item.code} extractValue={item => `${item.description} (${item.code})`} rules={rules.bankNumber} />
                         </Grid>
                         <Grid item xs={12} md={6}>
-                            <Select name="bankBranch" label="Bank Branch" control={control} list={branches()} idField="branchNumber" valueField="branchName" rules={rules.bankBranch} />
+                            <SelectInput name="bankBranch" label="Bank Branch" control={control} list={branches()} extractId={item => item.branchNumber} extractValue={item => `${item.branchName} (${item.branchNumber})`} rules={rules.bankBranch} />
                         </Grid>
                         <Grid item xs={12} md={6}>
-                            <Input name="accountingNumber" label="Accounting Number" type="number" control={control} rules={rules.accountingNumber} />
+                            <TextInput name="accountingNumber" label="Accounting Number" control={control} rules={rules.accountingNumber} />
                         </Grid>
                     </Grid>
                     <Button
