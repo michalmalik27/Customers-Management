@@ -14,7 +14,7 @@ import { makeStyles } from '@material-ui/core/styles';
 
 import UIActionState, { actionStates } from './UIActionState';
 import { CUSTOMER_API_URL } from './Constants';
-import { TextInput, NumberInput, DateInput, SelectInput, } from './Inputs';
+import { TextInput, DateInput, SelectInput, } from './Inputs';
 
 const useStyles = makeStyles((theme) => ({
     paper: {
